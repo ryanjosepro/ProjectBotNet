@@ -2,43 +2,91 @@ const discord = require('discord.js');
 const client = new discord.Client();
 const config = require('./config.json');
 
+const fetch = require('node-fetch');
+
+const utils = require('./utils');
+
+//Bot Events
+
 client.on('ready', () => {
     console.log('Bot Pronto!');
     client.user.setActivity('');
 })
 
 client.on('message', async msg => {
+
+    const responder = resposta => {
+        msg.reply(resposta);
+    }
     
     //Não responder a própria mensagem
     if (!msg.author.bot && msg.channel.type !== 'dm') {
         console.log(`${msg.author.username} disse "${msg.content}"`);
 
-        let msgFormt = msg.content.toLowerCase().trim();
-        let phrase = '';
-        let isPhrase = true;
-
-        //Mensagens legais
-        if (msgFormt.includes('bom dia')) {
-            phrase = `Bom dia meu amigo, já tomou aquele café?`;
-        } else if (msgFormt.includes('boa tarde')) {
-            phrase = `Boa tarde meu amigo, já bateu aquele prato?`;
-        } else if (msgFormt.includes('boa noite')) {
-            phrase = `Boa noite meu amigo, como foi seu dia?`;
-        } else isPhrase = false;
-
-        if (isPhrase) msg.reply(phrase, {tts: true});
-
-        //Calcular
-        if (msg.content.split(' ')[0].trim() === 'calcule') {
-            let exp = msg.content.slice(msg.content.split(' ')[0].length + 1);
-            msg.reply(`A resposta é ${eval(exp)}`);
-        }
-        
-        if (msg.content.toLowerCase() === 'ping') {
-            msg.reply(`Pong! ${Math.round(msg.client.ping)} ms`)
+        //Ping
+        if (msg.content.toLowerCase() === '/ping') {
+            responder(`Pong! ${Math.round(msg.client.ping)} ms`)
         }
 
-        //Transformar arquivos opus  em mp3
+        let cmd = utils.firstWord(msg.content);
+
+        switch (cmd) {
+            //Mandar falar - Ryan only
+            case '/diga':
+                if (msg.author.id === '670369066573234208') {
+                    let msgPara = msg.content.split('"')[2].trim();
+
+                    if (utils.firstWord(msgPara) === 'para') {
+                        let text = msg.content.split('"')[1];
+                        let channel = msgPara.trim().split(' ')[1].replace(/[<>#]/g, '');
+
+                        client.channels.get(channel).send(text);
+                    }
+                }
+            break;
+
+            //Calcular expressão
+            case '/calcule':
+                let exp = msg.content.slice(firstWord(msg.content).length + 1);
+                responder(`A resposta é ${eval(exp)}`);
+            break;
+
+            //Consultar CNPJ
+            case '/consulte':
+                let cnpj = msg.content.split(' ')[1].replace(/[^\d]+/g,'');
+
+                if (validarCNPJ(cnpj)) {
+                    fetch (`https://www.receitaws.com.br/v1/cnpj/${cnpj}`)
+                    .then(rs => rs.json())
+                    .then(rs => {
+                        if (rs.status === 'ERROR') {
+                            responder(rs.message);
+                        } else {
+                            responder(`
+                            **Razão Social:** ${rs.nome}
+                            **Nome Fantasia:** ${rs.fantasia}
+                            **CNPJ:** ${rs.cnpj}
+                            **Tipo:** ${rs.tipo}
+                            **Logradouro:** ${rs.logradouro}
+                            **Numero:** ${rs.numero}
+                            **Complemento:** ${rs.complemento}
+                            **Bairro/Setor:** ${rs.bairro}
+                            **Cidade:** ${rs.municipio}
+                            **CEP:** ${rs.cep}
+                            **Estado:** ${rs.uf}
+                            **Telefone:** ${rs.telefone}
+                            **Email:** ${rs.email}
+                            **Data abertura:** ${rs.abertura}
+                            `);
+                        }
+                    })
+                } else {
+                    responder('CNPJ inválido!')
+                }
+            break;
+        }
+
+        //Transformar arquivos opus em mp3
         msg.attachments.map((value) => {
             let url = value.url;
             let name = value.filename.split('.');
