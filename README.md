@@ -1,2 +1,2 @@
 # ProjectBot
-Discord Bot with business utily...
+Discord Bot with business utily
