@@ -55,7 +55,7 @@ client.on('message', async msg => {
             case '/consulte':
                 let cnpj = msg.content.split(' ')[1].replace(/[^\d]+/g,'');
 
-                if (validarCNPJ(cnpj)) {
+                if (utils.validarCNPJ(cnpj)) {
                     fetch (`https://www.receitaws.com.br/v1/cnpj/${cnpj}`)
                     .then(rs => rs.json())
                     .then(rs => {
