@@ -1,3 +1,15 @@
+/*
+BOTNET - 1.0
+
+/ping = Retorna o tempo de resposta do servidor;
+/diga = Mandar falar alguma coisa - Ryan Only;
+/calcule = Calcula uma expressão matemática;
+/consulte = Consulta um CNPJ;
+
+-Arquivos opus são transformados em mp3;
+
+*/
+
 const discord = require('discord.js');
 const client = new discord.Client();
 const config = require('./config.json');
@@ -47,7 +59,7 @@ client.on('message', async msg => {
 
             //Calcular expressão
             case '/calcule':
-                let exp = msg.content.slice(firstWord(msg.content).length + 1);
+                let exp = msg.content.slice(utils.firstWord(msg.content).length + 1);
                 responder(`A resposta é ${eval(exp)}`);
             break;
 
