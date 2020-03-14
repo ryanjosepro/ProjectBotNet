@@ -2,9 +2,7 @@
 BOTNET - 1.0
 
 /ping = Retorna o tempo de resposta do servidor;
-/diga = Mandar falar alguma coisa - Ryan Only;
-/calcule = Calcula uma expressão matemática;
-/consulte = Consulta um CNPJ;
+/consCNPJ = Consulta um CNPJ;
 
 -Arquivos opus são transformados em mp3;
 
@@ -16,7 +14,7 @@ const config = require('./config.json');
 
 const fetch = require('node-fetch');
 
-const utils = require('./utils');
+const utils = require('../utils/utils');
 
 //Bot Events
 
@@ -33,41 +31,22 @@ client.on('message', async msg => {
     
     //Não responder a própria mensagem
     if (!msg.author.bot && msg.channel.type !== 'dm') {
+
         console.log(`${msg.author.username} disse "${msg.content}"`);
 
-        //Ping
-        if (msg.content.toLowerCase() === '/ping') {
-            responder(`Pong! ${Math.round(msg.client.ping)} ms`)
-        }
+        let command = utils.firstWord(msg.content);
 
-        let cmd = utils.firstWord(msg.content);
-
-        switch (cmd) {
-            //Mandar falar - Ryan only
-            case '/diga':
-                if (msg.author.id === '670369066573234208') {
-                    let msgPara = msg.content.split('"')[2].trim();
-
-                    if (utils.firstWord(msgPara) === 'para') {
-                        let text = msg.content.split('"')[1];
-                        let channel = msgPara.trim().split(' ')[1].replace(/[<>#]/g, '');
-
-                        client.channels.get(channel).send(text);
-                    }
-                }
-            break;
-
-            //Calcular expressão
-            case '/calcule':
-                let exp = msg.content.slice(utils.firstWord(msg.content).length + 1);
-                responder(`A resposta é ${eval(exp)}`);
+        switch (command) {
+            //Ping
+            case '/ping':
+                responder(`Pong! ${Math.round(msg.client.ping)} ms`)
             break;
 
             //Consultar CNPJ
             case '/consulte':
                 let cnpj = msg.content.split(' ')[1].replace(/[^\d]+/g,'');
 
-                if (utils.validarCNPJ(cnpj)) {
+                if (utils.checkCNPJ(cnpj)) {
                     fetch (`https://www.receitaws.com.br/v1/cnpj/${cnpj}`)
                     .then(rs => rs.json())
                     .then(rs => {

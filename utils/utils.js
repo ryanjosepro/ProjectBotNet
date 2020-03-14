@@ -1,8 +1,14 @@
-const firstWord = text => {
-    return text.trim().split(' ')[0];
+//Texts
+const letters = text => {
+    return word.trim().split('');
 }
 
-const validarCNPJ = cnpj => {
+const words = text => {
+    return text.trim().split(' ');
+}
+
+//Validators
+const checkCNPJ = cnpj => {
     cnpj = cnpj.replace(/[^\d]+/g,'');
  
     if(cnpj == '') return false;
@@ -54,4 +60,25 @@ const validarCNPJ = cnpj => {
     return true;
 }
 
-module.exports = {firstWord, validarCNPJ};
+//Transformators
+const commandToObj = (commandText, commandKey = '/', paramKey = '-') => {
+    let objCommand = {
+        command: '',
+        contents: [],
+        params: {}
+    }
+
+    if (letters(commandText)[0] == commandKey) {
+        let reg = /(('[^']*')|("[^"]*"))|\S+/g;
+        let commandParts = commandText.match(reg);    
+
+        objCommand.command = commandParts[0];
+
+        params.reduce((value, index) => {
+
+        })
+        
+    }
+}
+
+module.exports = {firstWord, checkCNPJ};
