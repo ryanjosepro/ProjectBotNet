@@ -1,10 +1,20 @@
 //Texts
 const letters = text => {
-    return word.trim().split('');
+    return text.trim().split('');
+}
+
+const lastLetter = text => {
+    let content = letters(text);
+    return content[content.length - 1];
 }
 
 const words = text => {
-    return text.trim().split(' ');
+    text.trim().split(' ');
+}
+
+const lastWord = text => {
+    let content = words(text);
+    return content[content.length - 1];
 }
 
 //Validators
@@ -62,23 +72,41 @@ const checkCNPJ = cnpj => {
 
 //Transformators
 const commandToObj = (commandText, commandKey = '/', paramKey = '-') => {
+    //Local functions
+    const  isCommand = text => {
+        return (letters(text)[0] === commandKey);
+    }
+
+    const isContent = text => {
+        return letter(text)[0] != paramKey && !isCommand(text);
+    }
+
+    const isParam = text => {
+        return letters(text)[0] === paramKey && !isCommand(text);
+    }
+    
     let objCommand = {
         command: '',
         contents: [],
         params: {}
     }
 
-    if (letters(commandText)[0] == commandKey) {
-        let reg = /(('[^']*')|("[^"]*"))|\S+/g;
-        let commandParts = commandText.match(reg);    
+    //Transforming
+    const commandPartsRegex = /(('[^']*')|("[^"]*"))|\S+/g;
+    const commandParts = commandText.match(commandPartsRegex);    
 
+    if (isCommand(commandParts[0])) {
         objCommand.command = commandParts[0];
-
-        params.reduce((value, index) => {
-
-        })
-        
     }
+
+    commandParts.map((value, index, array) => {
+        if (isContent(value) && (index == 0 ? true : !isParam(array[index -1]))) {
+            objCommand.contents.push(value);
+        } else if (isParam(value)) {
+            
+        }
+    })
+        
 }
 
 module.exports = {firstWord, checkCNPJ};
