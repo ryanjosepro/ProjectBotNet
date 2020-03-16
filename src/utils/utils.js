@@ -74,15 +74,15 @@ const checkCNPJ = cnpj => {
 const commandToObj = (commandText, commandKey = '/', paramKey = '-') => {
     //Local functions
     const  isCommand = text => {
-        return (letters(text)[0] === commandKey);
+        return text == undefined ? false : (letters(text)[0] === commandKey);
     }
 
     const isContent = text => {
-        return letter(text)[0] != paramKey && !isCommand(text);
+        return text == undefined ? false : letters(text)[0] != paramKey && !isCommand(text);
     }
 
     const isParam = text => {
-        return letters(text)[0] === paramKey && !isCommand(text);
+        return text == undefined ? false : letters(text)[0] === paramKey && !isCommand(text);
     }
     
     let objCommand = {
@@ -100,13 +100,18 @@ const commandToObj = (commandText, commandKey = '/', paramKey = '-') => {
     }
 
     commandParts.map((value, index, array) => {
-        if (isContent(value) && (index == 0 ? true : !isParam(array[index -1]))) {
+        if (isContent(value) && (!isParam(array[index -1]))) {
             objCommand.contents.push(value);
         } else if (isParam(value)) {
-            
+            if (isContent(array[index + 1])) {
+                objCommand.params[value] = array[index + 1];
+            } else if (isParam(array[index + 1]) || index == array.length - 1) {
+                objCommand.params[value] = true;
+            }
         }
     })
-        
+    
+    return objCommand;
 }
 
-module.exports = {firstWord, checkCNPJ};
+module.exports = {letters, lastLetter, words, lastWord, checkCNPJ, commandToObj};
