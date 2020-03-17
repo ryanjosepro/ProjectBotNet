@@ -28,70 +28,68 @@ client.on('message', async msg => {
     const responder = resposta => {
         msg.reply(resposta);
     }
-    
+
     //Não responder a própria mensagem
-    if (!msg.author.bot && msg.channel.type !== 'dm') {
-        return null;
-    }
+    if (!msg.author.bot) {
+        console.log(`${msg.author.username} disse "${msg.content}"`);
 
-    console.log(`${msg.author.username} disse "${msg.content}"`);
+        let command = utils.commandToObj(msg.content);
 
-    let command = utils.firstWord(msg.content);
+        switch (command.command) {
+            //Ping
+            case '/ping':
+                responder(`Pong! ${Math.round(msg.client.ping)} ms`)
+            break;
 
-    switch (command) {
-        //Ping
-        case '/ping':
-            responder(`Pong! ${Math.round(msg.client.ping)} ms`)
-        break;
+            //Consultar CNPJ
+            case '/consultaCNPJ':
+                let cnpj = command.contents[0].replace(/[^\d]+/g,'');
 
-        //Consultar CNPJ
-        case '/consultaCNPJ':
-            let cnpj = msg.content.split(' ')[1].replace(/[^\d]+/g,'');
-
-            if (utils.checkCNPJ(cnpj)) {
-                fetch (`https://www.receitaws.com.br/v1/cnpj/${cnpj}`)
-                .then(rs => rs.json())
-                .then(rs => {
-                    if (rs.status === 'ERROR') {
-                        responder(rs.message);
-                    } else {
-                        responder(`
-                        **Razão Social:** ${rs.nome}
-                        **Nome Fantasia:** ${rs.fantasia}
-                        **CNPJ:** ${rs.cnpj}
-                        **Tipo:** ${rs.tipo}
-                        **Logradouro:** ${rs.logradouro}
-                        **Numero:** ${rs.numero}
-                        **Complemento:** ${rs.complemento}
-                        **Bairro/Setor:** ${rs.bairro}
-                        **Cidade:** ${rs.municipio}
-                        **CEP:** ${rs.cep}
-                        **Estado:** ${rs.uf}
-                        **Telefone:** ${rs.telefone}
-                        **Email:** ${rs.email}
-                        **Data abertura:** ${rs.abertura}
-                        `);
-                    }
-                })
-            } else {
-                responder('CNPJ inválido!')
-            }
-        break;
-    }
-
-    //Transformar arquivos opus em mp3
-    msg.attachments.map((value) => {
-        let url = value.url;
-        let name = value.filename.split('.');
-
-        if (name[name.length - 1] == 'opus') {
-            name[name.length - 1] = 'mp3';
-
-            const attach = new discord.Attachment(url, name.join('.'));
-            
-            msg.reply(attach);
+                if (utils.checkCNPJ(cnpj)) {
+                    fetch (`https://www.receitaws.com.br/v1/cnpj/${cnpj}`)
+                    .then(rs => rs.json())
+                    .then(rs => {
+                        if (rs.status === 'ERROR') {
+                            responder(rs.message);
+                        } else {
+                            responder(`
+                            **Razão Social:** ${rs.nome}
+                            **Nome Fantasia:** ${rs.fantasia}
+                            **CNPJ:** ${rs.cnpj}
+                            **Tipo:** ${rs.tipo}
+                            **Logradouro:** ${rs.logradouro}
+                            **Numero:** ${rs.numero}
+                            **Complemento:** ${rs.complemento}
+                            **Bairro/Setor:** ${rs.bairro}
+                            **Cidade:** ${rs.municipio}
+                            **CEP:** ${rs.cep}
+                            **Estado:** ${rs.uf}
+                            **Telefone:** ${rs.telefone}
+                            **Email:** ${rs.email}
+                            **Data abertura:** ${rs.abertura}
+                            `);
+                        }
+                    })
+                } else {
+                    responder('CNPJ inválido!');
+                }
+            break;
         }
-    });
+
+        //Transformar arquivos opus em mp3
+        msg.attachments.map((value) => {
+            let url = value.url;
+            let name = value.filename.split('.');
+
+            if (name[name.length - 1] == 'opus') {
+                name[name.length - 1] = 'mp3';
+
+                const attach = new discord.Attachment(url, name.join('.'));
+                
+                msg.reply(attach);
+            }
+        });
+    }
 })
 
 client.login(config.token);
