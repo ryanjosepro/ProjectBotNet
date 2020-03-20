@@ -38,7 +38,8 @@ client.on('message', async msg => {
         switch (command.command) {
             //Ping
             case '/ping':
-                responder(`Pong! ${Math.round(msg.client.ping)} ms`)
+                responder(`Pong! ${msg.client.ping} ms`)
+                console.log(msg.client);
             break;
 
             //Consultar CNPJ
