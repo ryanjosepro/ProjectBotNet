@@ -5,16 +5,17 @@ BOTNET - 1.0
 /consultaCNPJ = Consulta um CNPJ;
 
 -Arquivos opus são transformados em mp3;
-
 */
 
 const discord = require('discord.js');
 const client = new discord.Client();
-const config = require('./config.json');
-
-const fetch = require('node-fetch');
+const config = require('./.env');
 
 const utils = require('./utils/utils');
+
+//Bot Functions
+const botGeneral = require('./functions/general');
+const botFiscal = require('./functions/fiscal');
 
 //Bot Events
 
@@ -25,71 +26,32 @@ client.on('ready', () => {
 
 client.on('message', async msg => {
 
-    const responder = resposta => {
-        msg.reply(resposta);
-    }
-
     //Não responder a própria mensagem
     if (!msg.author.bot) {
         console.log(`${msg.author.username} disse "${msg.content}"`);
 
-        let command = utils.commandToObj(msg.content);
+        if (msg.content) {
+            let command = utils.commandToObj(msg.content);
 
-        switch (command.command) {
-            //Ping
-            case '/ping':
-                responder(`Pong! ${msg.client.ping} ms`)
-                console.log(msg.client);
-            break;
+            switch (command.command) {
+                //Ping
+                case '/ping':
+                    botGeneral.ping(msg);
+                break;
 
-            //Consultar CNPJ
-            case '/consultaCNPJ':
-                let cnpj = command.contents[0].replace(/[^\d]+/g,'');
+                //Consultar CNPJ
+                case '/consultaCNPJ':
+                    let cnpj = command.contents[0].replace(/[^\d]+/g,'');
 
-                if (utils.checkCNPJ(cnpj)) {
-                    fetch (`https://www.receitaws.com.br/v1/cnpj/${cnpj}`)
-                    .then(rs => rs.json())
-                    .then(rs => {
-                        if (rs.status === 'ERROR') {
-                            responder(rs.message);
-                        } else {
-                            responder(`
-                            **Razão Social:** ${rs.nome}
-                            **Nome Fantasia:** ${rs.fantasia}
-                            **CNPJ:** ${rs.cnpj}
-                            **Tipo:** ${rs.tipo}
-                            **Logradouro:** ${rs.logradouro}
-                            **Numero:** ${rs.numero}
-                            **Complemento:** ${rs.complemento}
-                            **Bairro/Setor:** ${rs.bairro}
-                            **Cidade:** ${rs.municipio}
-                            **CEP:** ${rs.cep}
-                            **Estado:** ${rs.uf}
-                            **Telefone:** ${rs.telefone}
-                            **Email:** ${rs.email}
-                            **Data abertura:** ${rs.abertura}
-                            `);
-                        }
-                    })
-                } else {
-                    responder('CNPJ inválido!');
-                }
-            break;
-        }
-
-        //Transformar arquivos opus em mp3
-        msg.attachments.map((value) => {
-            let url = value.url;
-            let name = value.filename.split('.');
-
-            if (name[name.length - 1] == 'opus') {
-                name[name.length - 1] = 'mp3';
-
-                const attach = new discord.Attachment(url, name.join('.'));
-                
-                msg.reply(attach);
+                    botFiscal.consultaCNPJ(msg, cnpj);
+                break;
             }
-        });
+        }
+        
+        //Transformar arquivos opus em mp3
+        if (msg.attachments.size > 0) {
+            botGeneral.opusToMp3(msg, msg.attachments);
+        }
     }
 })
 
