@@ -55,4 +55,6 @@ client.on('message', async msg => {
     }
 })
 
-client.login(config.token);
+module.exports = () => {
+    client.login(config.token);
+}
